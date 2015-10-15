@@ -6,7 +6,7 @@
 
 int main(int /*argc*/, char **/*argv*/)
   {
-	FIFO fifo();
+	FIFO fifo;
 	if (!fifo.open())
 	  {
 		return EXIT_FAILURE;
