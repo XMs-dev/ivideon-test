@@ -7,6 +7,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR true)
 
 set(${PROJECT}_SRCS FIFO.cpp
                     LEDFakeDevice.cpp
+                    Server.cpp
                     main.cpp)
 
 add_executable(${PROJECT} ${${PROJECT}_SRCS})
