@@ -2,8 +2,7 @@
 
 
 
-LEDFakeDevice::LEDFakeDevice(): m_color(Off),
-                                m_freq(0)
+LEDFakeDevice::LEDFakeDevice()
   {}
 
 

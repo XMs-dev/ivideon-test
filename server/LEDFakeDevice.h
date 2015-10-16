@@ -1,27 +1,13 @@
 #ifndef LEDFAKEDEVICE_H
 #define LEDFAKEDEVICE_H
 
+#include "LEDDevice.h"
 
 
-class LEDFakeDevice
+
+class LEDFakeDevice: public LEDDevice
   {
-	typedef unsigned char uchar; // use typedef instead of including big files
-
-	public:
-		enum Color
-		  {
-			Red,
-			Green,
-			Blue,
-
-			Off
-		  };
-
-		const uchar MAX_FREQ = 5;
-
 	private:
-		Color m_color;
-		uchar m_freq;
 
 	protected:
 
@@ -30,12 +16,12 @@ class LEDFakeDevice
 		virtual ~LEDFakeDevice();
 
 		/*** Set ***/
-		bool  setColor(Color color);
-		bool  setFrequency(uchar freq);
+		virtual bool  setColor(Color color)    override;
+		virtual bool  setFrequency(uchar freq) override;
 
 		/*** Get ***/
-		Color color()     const;
-		uchar frequency() const;
+		virtual Color color()     const override;
+		virtual uchar frequency() const override;
 
 		/*** Other ***/
   };
