@@ -39,8 +39,8 @@ class LEDDevice
 		virtual bool  setFrequency(uchar freq) = 0;
 
 		/*** Get ***/
-		virtual Color color()     const = 0;
-		virtual uchar frequency() const = 0;
+		virtual Color color()     const        = 0;
+		virtual uchar frequency() const        = 0;
 
 		/*** Other ***/
   };

@@ -13,7 +13,6 @@ Server::Server(): m_pDevice(nullptr),
 
 Server::~Server()
   {
-	delete m_pDevice;
   }
 
 
@@ -30,6 +29,38 @@ Server::~Server()
 void Server::log(const std::string &msg)
   {
 	std::cerr << msg;
+  }
+
+
+
+bool Server::parseArgs(const std::string &input,
+                             std::string &cmd,
+                             std::string &arg)
+  {
+	if (input.size() == 0) return false;
+
+	auto newlinePos = input.find('\n');
+	if (newlinePos == std::string::npos) return false;
+
+	auto splitPoint = input.find(' ');
+
+	if (splitPoint == std::string::npos
+	 || splitPoint >= newlinePos)
+		cmd = input.substr(0, newlinePos);
+	else
+	  {
+		cmd = input.substr(0, splitPoint);
+
+		auto argPos  = input.find_first_not_of(' ', splitPoint);
+		if  (argPos != std::string::npos
+		  && argPos  < newlinePos)
+		  {
+			auto argSize = newlinePos - argPos;
+			arg = input.substr(argPos, argSize);
+		  }
+	  }
+
+	return true;
   }
 
 
@@ -212,6 +243,26 @@ std::string Server::getLEDRateStr() const
 
 
 
+std::string Server::getCmdListStr() const
+  {
+	std::string result;
+
+	auto it = m_ops.cbegin();
+	while(it != m_ops.cend())
+	  {
+		result.append(it->first);
+
+		++it;
+
+		if (it != m_ops.cend())
+			result.append(", ");
+	  }
+
+	return result;
+  }
+
+
+
 bool Server::getLEDState(bool *fail) const
   {
 	if (m_pDevice == nullptr) goto fail;
@@ -273,6 +324,10 @@ bool Server::applyCommand(const std::string &cmd,
 			*res = getLEDRateStr();
 			return true;
 
+		case GetCmdList:
+			*res = getCmdListStr();
+			return true;
+
 		case SetLEDState:
 			if (setLEDState(arg)) goto set_ok;
 			else                  goto set_fail;
@@ -289,7 +344,7 @@ bool Server::applyCommand(const std::string &cmd,
   unknown_command:
 	log("Unknown command" + cmd);
 
-	if (res) *res = "FAILED";
+	*res = "FAILED";
 	return false;
 
   set_ok:
@@ -299,4 +354,16 @@ bool Server::applyCommand(const std::string &cmd,
   set_fail:
 	*res = "FAILED";
 	return true;
+  }
+
+
+
+bool Server::applyCommand(const std::string &cmd,
+                                std::string *res)
+  {
+	std::string command, arg;
+
+	if (parseArgs(cmd, command, arg))
+		return applyCommand(command, arg, res);
+	else return false;
   }

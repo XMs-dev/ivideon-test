@@ -4,13 +4,22 @@
 
 
 
-FIFO::FIFO()
+FIFO::FIFO(const std::string &pathname,
+           FileStream::OnDestructBehavior behavior): m_stream(pathname, behavior)
+//                                                    m_name(pathname)
   {}
 
 
 
-FIFO::FIFO(const std::string &pathname): m_name(pathname)
-  {}
+FIFO::FIFO(int fd): m_stream(fd)
+  {
+  }
+
+
+
+FIFO::FIFO(FileStream::OnDestructBehavior behavior): m_stream(behavior)
+  {
+  }
 
 
 
@@ -39,10 +48,9 @@ FIFO::~FIFO()
 /*** Set ***/
 void FIFO::setPathname(const std::string &pathname)
   {
-	if (m_stream.is_open())
-		close();
-
-	m_name = pathname;
+	close();
+	m_stream.setFilepath(pathname);
+// 	m_name = pathname;
   }
 
 
@@ -50,7 +58,15 @@ void FIFO::setPathname(const std::string &pathname)
 /*** Get ***/
 const std::string &FIFO::pathname() const
   {
-	return m_name;
+	return m_stream.filepath();
+// 	return m_name;
+  }
+
+
+
+int FIFO::fileDescriptor() const
+  {
+	return m_stream.fileDescriptor();
   }
 
 
@@ -60,15 +76,18 @@ bool FIFO::open(FIFO::AccessMode mode)
   {
 	close();
 
-	if (m_name.size() == 0) return false;
+	const auto &name = m_stream.filepath();
 
-	if (mkfifo(m_name.c_str(), mode))
+	if (name.size() == 0) return false;
+
+	if (mkfifo(name.c_str(), mode))
 		return false;
 
-	m_stream.open(m_name);
-	if (m_stream.fail())
+	m_stream.open();
+// 	if (m_stream.fail())
+	if (!m_stream.open())
 	  {
-		std::remove(m_name.c_str());
+		std::remove(name.c_str());
 		return false;
 	  }
 
@@ -79,13 +98,13 @@ bool FIFO::open(FIFO::AccessMode mode)
 
 bool FIFO::close()
   {
-	if (!m_stream.is_open()) return true;
+	if (!m_stream.isOpen()) return true;
+
+	const auto &name = m_stream.filepath();
 
 	m_stream.close();
-	if (m_stream.fail())
-		return false;
 
-	if (std::remove(m_name.c_str()))
+	if (std::remove(name.c_str()))
 		return false;
 
 	return true;
@@ -95,20 +114,22 @@ bool FIFO::close()
 
 void operator<<(FIFO &obj, const std::string &str)
   {
-	std::fstream &stream = obj.m_stream;
+	auto &stream = obj.m_stream;
 
-	if (!stream.is_open()) return;
+	if (!stream.isOpen()) return;
 
-	stream << str;
+// 	stream << str;
+	stream.writeLine(str);
   }
 
 
 
 void operator>>(FIFO &obj, std::string &str)
   {
-	std::fstream &stream = obj.m_stream;
+	auto &stream = obj.m_stream;
 
-	if (!stream.is_open()) return;
+	if (!stream.isOpen()) return;
 
-	stream >> str;
+// 	stream >> str;
+	str = stream.getLine();
   }

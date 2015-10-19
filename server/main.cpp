@@ -1,19 +1,16 @@
-#include <cstdlib>
+#include "Server.h"
+#include "FileMon.h"
+#include "LEDFakeDevice.h"
 
-#include "FIFO.h"
 
 
-
-int main(int /*argc*/, char **/*argv*/)
+int main(int argc, char **argv)
   {
-	FIFO fifo;
-	if (!fifo.open())
-	  {
-		return EXIT_FAILURE;
-	  }
+	LEDFakeDevice device;
 
-	std::string cmd;
-	fifo >> cmd;
+	Server server;
+	server.setDevice(&device);
 
-	return EXIT_SUCCESS;
+	FileMon filemon(&server);
+	return filemon.exec(argc, argv);
   }

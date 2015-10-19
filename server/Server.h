@@ -20,6 +20,8 @@ class Server
 
 			SetLEDRate,
 			GetLEDRate,
+
+			GetCmdList,
 		  };
 
 		const std::map<std::string, Operation> m_ops =
@@ -31,6 +33,8 @@ class Server
 
 			 {"set-led-rate",  SetLEDRate},
 			 {"get-led-rate",  GetLEDRate},
+
+			 {"get-cmd-list",  GetCmdList},
 			};
 
 		typedef LEDDevice::Color Color;
@@ -40,6 +44,9 @@ class Server
 
 	protected:
 		void log(const std::string &msg);
+		bool parseArgs(const std::string &input,
+                             std::string &cmd,
+                             std::string &arg);
 
 	public:
 		explicit Server();
@@ -62,6 +69,7 @@ class Server
 		std::string  getLEDStateStr() const;
 		std::string  getLEDColorStr() const;
 		std::string  getLEDRateStr()  const;
+		std::string  getCmdListStr()  const;
 
 		bool         getLEDState(bool *fail = nullptr)    const;
 		Color        getLEDColor(bool *fail = nullptr)    const;
@@ -70,6 +78,8 @@ class Server
 		/*** Other ***/
 		bool         applyCommand(const std::string &cmd,
 		                          const std::string &arg,
+		                                std::string *res);
+		bool         applyCommand(const std::string &cmd,
 		                                std::string *res);
   };
 

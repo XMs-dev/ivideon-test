@@ -6,6 +6,8 @@ project(${PROJECT})
 set(CMAKE_INCLUDE_CURRENT_DIR true)
 
 set(${PROJECT}_SRCS FIFO.cpp
+                    FileMon.cpp
+                    FileStream.cpp
                     LEDFakeDevice.cpp
                     Server.cpp
                     main.cpp)
