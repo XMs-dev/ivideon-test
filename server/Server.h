@@ -9,6 +9,15 @@
 
 class Server
   {
+	public:
+		enum ExtCommand
+		  {
+			None,
+			NewClient,
+			ClientExit,
+			Quit
+		  };
+
 	private:
 		enum Operation
 		  {
@@ -22,6 +31,10 @@ class Server
 			GetLEDRate,
 
 			GetCmdList,
+
+			Hello,
+			Exit,
+			Terminate,
 		  };
 
 		const std::map<std::string, Operation> m_ops =
@@ -35,6 +48,10 @@ class Server
 			 {"get-led-rate",  GetLEDRate},
 
 			 {"get-cmd-list",  GetCmdList},
+
+			 {"hello",         Hello},
+			 {"exit",          Exit},
+			 {"terminate",     Terminate},
 			};
 
 		typedef LEDDevice::Color Color;
@@ -78,9 +95,11 @@ class Server
 		/*** Other ***/
 		bool         applyCommand(const std::string &cmd,
 		                          const std::string &arg,
-		                                std::string *res);
+		                                std::string *res,
+		                                ExtCommand  *ecd);
 		bool         applyCommand(const std::string &cmd,
-		                                std::string *res);
+		                                std::string *res,
+		                                ExtCommand  *ecd);
   };
 
 #endif // SERVER_H

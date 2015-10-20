@@ -26,9 +26,15 @@ class FIFO
 			OwnerGroup = Owner | Group,
 			OwnerGroupOther = OwnerGroup | Other,
 		  };
+		enum OnDestructBehavior
+		  {
+			CloseOnDestruct,
+			DontCloseOnDestruct
+		  };
 
 	private:
 		FileStream  m_stream;
+		bool        m_closeOnDestruct;
 
 // 		std::fstream m_stream;
 // 		std::string  m_name;
@@ -37,9 +43,9 @@ class FIFO
 
 	public:
 		explicit FIFO(const std::string &pathname,
-		              FileStream::OnDestructBehavior behavior = FileStream::CloseWhenDestruct);
+		              OnDestructBehavior behavior = CloseOnDestruct);
 		explicit FIFO(int fd);
-		explicit FIFO(FileStream::OnDestructBehavior behavior = FileStream::CloseWhenDestruct);
+		explicit FIFO(OnDestructBehavior behavior = CloseOnDestruct);
 		virtual ~FIFO();
 
 		/*** Set ***/
@@ -51,7 +57,7 @@ class FIFO
 
 		/*** Other ***/
 		       bool         open(AccessMode mode = OwnerGroupOther);
-		       bool         close();
+		       bool         close(bool force = false);
 
 		friend void         operator<<(FIFO &obj, const std::string &str);
 		friend void         operator>>(FIFO &obj,       std::string &str);

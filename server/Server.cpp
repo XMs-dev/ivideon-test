@@ -6,14 +6,13 @@
 
 
 Server::Server(): m_pDevice(nullptr),
-                  m_prevColor(Color::Off)
+                  m_prevColor(Color::Red)
   {}
 
 
 
 Server::~Server()
-  {
-  }
+  {}
 
 
 
@@ -37,7 +36,7 @@ bool Server::parseArgs(const std::string &input,
                              std::string &cmd,
                              std::string &arg)
   {
-	if (input.size() == 0) return false;
+	if (input.empty()) return false;
 
 	auto newlinePos = input.find('\n');
 	if (newlinePos == std::string::npos) return false;
@@ -153,6 +152,7 @@ bool Server::setLEDState(bool state)
 
 bool Server::setLEDColor(Server::Color color)
   {
+	if (color == Color::Off) return false;
 	return m_pDevice->setColor(color);
   }
 
@@ -267,6 +267,8 @@ bool Server::getLEDState(bool *fail) const
   {
 	if (m_pDevice == nullptr) goto fail;
 
+	if (fail) *fail = false;
+
 	return m_pDevice->color() != Color::Off;
 
   fail:
@@ -279,6 +281,8 @@ bool Server::getLEDState(bool *fail) const
 Server::Color Server::getLEDColor(bool *fail) const
   {
 	if (m_pDevice == nullptr) goto fail;
+
+	if (fail) *fail = false;
 
 	return m_pDevice->color();
 
@@ -293,6 +297,8 @@ uchar Server::getLEDRate(bool *fail) const
   {
 	if (m_pDevice == nullptr) goto fail;
 
+	if (fail) *fail = false;
+
 	return m_pDevice->frequency();
 
   fail:
@@ -305,8 +311,11 @@ uchar Server::getLEDRate(bool *fail) const
 /*** Other ***/
 bool Server::applyCommand(const std::string &cmd,
                           const std::string &arg,
-                                std::string *res)
+                                std::string *res,
+                                ExtCommand  *ecd)
   {
+	*ecd = None;
+
 	auto it = m_ops.find(cmd);
 	if (it == m_ops.end()) goto unknown_command;
 
@@ -328,6 +337,19 @@ bool Server::applyCommand(const std::string &cmd,
 			*res = getCmdListStr();
 			return true;
 
+		case Hello:
+			*ecd = NewClient;
+			return true;
+
+		case Exit:
+			*ecd = ClientExit;
+			return true;
+
+		case Terminate:
+			*res = "OK";
+			*ecd = Quit;
+			return true;
+
 		case SetLEDState:
 			if (setLEDState(arg)) goto set_ok;
 			else                  goto set_fail;
@@ -339,12 +361,18 @@ bool Server::applyCommand(const std::string &cmd,
 		case SetLEDRate:
 			if (setLEDRate(arg))  goto set_ok;
 			else                  goto set_fail;
+
+		// Don't use default to let compiler show warning here
+		// if some case are not listed.
+		// All warnings are maked into errors (-Werror)
+// 		default:
+// 			break;
 	  }
 
   unknown_command:
 	log("Unknown command" + cmd);
 
-	*res = "FAILED";
+	*res = "FAILED unknown command";
 	return false;
 
   set_ok:
@@ -359,11 +387,14 @@ bool Server::applyCommand(const std::string &cmd,
 
 
 bool Server::applyCommand(const std::string &cmd,
-                                std::string *res)
+                                std::string *res,
+                                ExtCommand  *ecd)
   {
 	std::string command, arg;
 
+	*ecd = None;
+
 	if (parseArgs(cmd, command, arg))
-		return applyCommand(command, arg, res);
+		return applyCommand(command, arg, res, ecd);
 	else return false;
   }

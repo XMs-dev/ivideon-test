@@ -5,19 +5,20 @@
 
 
 FIFO::FIFO(const std::string &pathname,
-           FileStream::OnDestructBehavior behavior): m_stream(pathname, behavior)
-//                                                    m_name(pathname)
+           OnDestructBehavior behavior): m_stream(pathname),
+                                         m_closeOnDestruct(behavior == CloseOnDestruct)
   {}
 
 
 
-FIFO::FIFO(int fd): m_stream(fd)
+FIFO::FIFO(int fd): m_stream(fd),
+                    m_closeOnDestruct(false)
   {
   }
 
 
 
-FIFO::FIFO(FileStream::OnDestructBehavior behavior): m_stream(behavior)
+FIFO::FIFO(OnDestructBehavior behavior): m_closeOnDestruct(behavior == CloseOnDestruct)
   {
   }
 
@@ -25,7 +26,8 @@ FIFO::FIFO(FileStream::OnDestructBehavior behavior): m_stream(behavior)
 
 FIFO::~FIFO()
   {
-	close();
+	if (m_closeOnDestruct)
+		close();
   }
 
 
@@ -50,7 +52,6 @@ void FIFO::setPathname(const std::string &pathname)
   {
 	close();
 	m_stream.setFilepath(pathname);
-// 	m_name = pathname;
   }
 
 
@@ -59,7 +60,6 @@ void FIFO::setPathname(const std::string &pathname)
 const std::string &FIFO::pathname() const
   {
 	return m_stream.filepath();
-// 	return m_name;
   }
 
 
@@ -78,13 +78,11 @@ bool FIFO::open(FIFO::AccessMode mode)
 
 	const auto &name = m_stream.filepath();
 
-	if (name.size() == 0) return false;
+	if (name.empty()) return false;
 
 	if (mkfifo(name.c_str(), mode))
 		return false;
 
-	m_stream.open();
-// 	if (m_stream.fail())
 	if (!m_stream.open())
 	  {
 		std::remove(name.c_str());
@@ -96,9 +94,9 @@ bool FIFO::open(FIFO::AccessMode mode)
 
 
 
-bool FIFO::close()
+bool FIFO::close(bool force)
   {
-	if (!m_stream.isOpen()) return true;
+	if (!m_stream.isOpen() && !force) return true;
 
 	const auto &name = m_stream.filepath();
 
@@ -118,7 +116,6 @@ void operator<<(FIFO &obj, const std::string &str)
 
 	if (!stream.isOpen()) return;
 
-// 	stream << str;
 	stream.writeLine(str);
   }
 
@@ -130,6 +127,5 @@ void operator>>(FIFO &obj, std::string &str)
 
 	if (!stream.isOpen()) return;
 
-// 	stream >> str;
 	str = stream.getLine();
   }
