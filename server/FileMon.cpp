@@ -143,6 +143,8 @@ int FileMon::exec()
 					if (!newPipe.open())
 					  {
 						ctl << "Failed to open " + newPipe.pathname();
+						newPipe.close(true);
+
 						++it;
 						continue;
 					  }
