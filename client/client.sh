@@ -22,6 +22,12 @@ if read line <$CTLPIPEOUT; then
 	#echo $line
 fi
 
+if [ ! -e $PIPEIN  ] ||
+   [ ! -e $PIPEOUT ]; then
+	echo "Connection failed"
+	exit 1
+fi
+
 #echo "OK"
 #echo "Going to user input loop"
 
