@@ -8,7 +8,8 @@
 #include "FIFO.h"
 #include "Server.h"
 
-#define PIPE(x) {x, POLLIN, 0}
+#define PIPE(x)    {x, POLLIN, 0}
+#define PAIR(x, y) std::pair<int, int>(x, y)
 
 
 
@@ -97,7 +98,10 @@ int FileMon::exec()
 	  }
 
 	std::vector<pollfd> pipes;
-	pipes.insert(pipes.cend(), PIPE(ctl.fileDescriptor()));
+	pipes.insert(pipes.cend(), PIPE(ctl.fileDescIn()));
+
+	std::map<int, int> fds;
+	fds.insert(PAIR(ctl.fileDescIn(), ctl.fileDescOut()));
 
 	Server::ExtCommand ecd;
 
@@ -111,7 +115,7 @@ int FileMon::exec()
 			break;
 		  }
 
-		auto it = pipes.begin();
+		auto  it  = pipes.begin();
 		while(it != pipes.end())
 		  {
 			auto &pipe = *it;
@@ -120,7 +124,7 @@ int FileMon::exec()
 			  {
 				std::string cmd, res;
 
-				if (pipe.fd == ctl.fileDescriptor())
+				if (pipe.fd == ctl.fileDescIn())
 					{
 						// It is a ctl pipe, new client connected
 						ctl >> cmd;
@@ -144,13 +148,15 @@ int FileMon::exec()
 						  }
 
 						it = pipes.insert(pipes.cend(),
-						                  PIPE(newPipe.fileDescriptor())) - 1;
+						                  PIPE(newPipe.fileDescIn())) - 1;
+						fds.insert(PAIR(newPipe.fileDescIn(),
+						                newPipe.fileDescOut()));
 
 						ctl << newPipe.pathname();
 					}
 				else
 				  {
-					FIFO fifo(pipe.fd);
+					FIFO fifo(pipe.fd, fds.at(pipe.fd));
 					fifo >> cmd;
 
 					if (cmd.empty())
@@ -177,7 +183,7 @@ int FileMon::exec()
 
 	for (auto &pipe: pipes)
 	  {
-		FIFO fifo(pipe.fd);
+		FIFO fifo(pipe.fd, fds.at(pipe.fd));
 		fifo << "Server terminating";
 		fifo.close();
 	  }
