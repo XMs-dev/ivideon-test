@@ -77,7 +77,8 @@ class Server
 			 {Exit,        "Tell the server that you don't intend to send commands and close client"},
 			 {Terminate,   "Stop the server"},
 
-			 {Help,        "Get help on commands. List of commands you can get by get-cmd-list command"},
+			 {Help,        "Get help on commands. Usage: help [command]. "
+			               "You can get list of commands by get-cmd-list command"},
 			};
 
 		typedef LEDDevice::Color Color;

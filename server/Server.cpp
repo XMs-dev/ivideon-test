@@ -316,6 +316,8 @@ uchar Server::getLEDRate(bool *fail) const
   {
 	if (m_pDevice == nullptr) goto fail;
 
+	if (m_pDevice->color() == Color::Off) goto fail;
+
 	if (fail) *fail = false;
 
 	return m_pDevice->frequency();
