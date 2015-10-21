@@ -28,11 +28,23 @@ echo "Going to user input loop"
 while true
 do
 	read cmd
+
+	if [ ! -e $PIPEIN ]; then
+		if [ ! -e $CTLPIPEIN ]; then
+			echo "Server stopped"
+			break
+		fi
+
+		echo "Pipe is broken"
+		break
+	fi
+
 	/bin/echo $cmd > $PIPEIN
 
-	#if [ $cmd -eq "exit" ]; then
-	#	break
-	#fi
+	if [ "$cmd" == "exit" ] ||
+	   [ "$cmd" == "terminate" ]; then
+		break
+	fi
 
 	echo "Reading answer... "
 
