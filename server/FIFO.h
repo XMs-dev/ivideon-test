@@ -2,7 +2,6 @@
 #define FIFO_H
 
 #include <string>
-// #include <fstream>
 #include <sys/stat.h>
 
 #include "FileStream.h"
@@ -33,18 +32,17 @@ class FIFO
 		  };
 
 	private:
-		FileStream  m_stream;
+		FileStream  m_streamIn,
+		            m_streamOut;
 		bool        m_closeOnDestruct;
-
-// 		std::fstream m_stream;
-// 		std::string  m_name;
+		std::string m_name;
 
 	protected:
 
 	public:
 		explicit FIFO(const std::string &pathname,
 		              OnDestructBehavior behavior = CloseOnDestruct);
-		explicit FIFO(int fd);
+		explicit FIFO(int fdIn, int fdOut);
 		explicit FIFO(OnDestructBehavior behavior = CloseOnDestruct);
 		virtual ~FIFO();
 
@@ -52,8 +50,9 @@ class FIFO
 		       void         setPathname(const std::string &pathname);
 
 		/*** Get ***/
-		const  std::string &pathname()       const;
-		       int          fileDescriptor() const;
+		const  std::string &pathname()    const;
+		       int          fileDescIn()  const;
+		       int          fileDescOut() const;
 
 		/*** Other ***/
 		       bool         open(AccessMode mode = OwnerGroupOther);

@@ -122,8 +122,12 @@ void FileStream::close()
 
 void FileStream::writeLine(const std::string &line)
   {
-	if (write(m_fileDescriptor, line.c_str(), line.size()) == -1)
-	  {}; // TODO error handling
+	ssize_t bytesWritten = write(m_fileDescriptor, line.c_str(),
+	                                               line.size());
+	if (bytesWritten == ssize_t(line.size()))
+	  {
+		bytesWritten = write(m_fileDescriptor, "\n", 1);
+	  };
   }
 
 
