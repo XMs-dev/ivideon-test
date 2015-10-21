@@ -122,8 +122,11 @@ void FileStream::close()
 
 void FileStream::writeLine(const std::string &line)
   {
-	write(m_fileDescriptor, line.c_str(), line.size());
-	write(m_fileDescriptor, "\n", 1);
+	if (write(m_fileDescriptor, line.c_str(), line.size()) == -1)
+		return;
+
+	if (write(m_fileDescriptor, "\n", 1) == -1)
+		return;
   }
 
 
