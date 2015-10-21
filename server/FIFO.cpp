@@ -121,20 +121,18 @@ bool FIFO::open(FIFO::AccessMode mode)
 
 bool FIFO::close(bool force)
   {
-	if (!m_streamIn.isOpen()
-	 && !m_streamOut.isOpen()
-	 && !force) return true;
-
 	const auto &inname  = m_streamIn.filepath(),
 	           &outname = m_streamOut.filepath();
 
-	m_streamIn.close();
-	m_streamOut.close();
+	if (force || m_streamIn.isOpen())
+		m_streamIn.close();
+	if (force || m_streamOut.isOpen())
+		m_streamOut.close();
 
-	// TODO check if one is open and another is closed
 	if (std::remove(inname.c_str())
 	 || std::remove(outname.c_str()))
-		return false;
+		if (!force)
+			return false;
 
 	return true;
   }

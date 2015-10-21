@@ -116,7 +116,7 @@ bool Server::setLEDRate(const std::string &rate)
 	  {
 		nrate = uchar(std::stoi(rate));
 	  }
-	catch (std::exception exp)
+	catch (const std::exception &exp)
 	  {
 		log("setLEDRate: " + std::string(exp.what()));
 		return false;

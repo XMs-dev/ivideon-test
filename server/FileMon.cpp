@@ -120,40 +120,42 @@ int FileMon::exec()
 		  {
 			auto &pipe = *it;
 
-			if (pipe.revents & POLLIN) // TODO try to filter data
+			if (pipe.revents & POLLIN)
 			  {
 				std::string cmd, res;
 
 				if (pipe.fd == ctl.fileDescIn())
-					{
-						// It is a ctl pipe, new client connected
-						ctl >> cmd;
+				  {
+					// It is a ctl pipe, new client connected
+					ctl >> cmd;
 
-						// Filter random garbage
-						m_pServer->applyCommand(cmd, &res, &ecd);
-						if (ecd != Server::NewClient)
-						  {
-							++it;
-							continue;
-						  }
+					// Filter random garbage
+					m_pServer->applyCommand(cmd, &res, &ecd);
+					if (ecd != Server::NewClient)
+					  {
+						++it;
+						continue;
+					  }
 
-						// Create pipe for new client
-						FIFO newPipe(makePipeName(), FIFO::DontCloseOnDestruct);
+					// Create pipe for new client
+					FIFO newPipe(makePipeName(), FIFO::DontCloseOnDestruct);
 
-						if (!newPipe.open())
-						  {
-							ctl << "Failed to open " + newPipe.pathname();
-							++it;
-							continue;
-						  }
+					if (!newPipe.open())
+					  {
+						ctl << "Failed to open " + newPipe.pathname();
+						newPipe.close(true);
 
-						it = pipes.insert(pipes.cend(),
-						                  PIPE(newPipe.fileDescIn())) - 1;
-						fds.insert(PAIR(newPipe.fileDescIn(),
-						                newPipe.fileDescOut()));
+						++it;
+						continue;
+					  }
 
-						ctl << newPipe.pathname();
-					}
+					it = pipes.insert(pipes.cend(),
+					                  PIPE(newPipe.fileDescIn())) - 1;
+					fds.insert(PAIR(newPipe.fileDescIn(),
+					                newPipe.fileDescOut()));
+
+					ctl << newPipe.pathname();
+				  }
 				else
 				  {
 					FIFO fifo(pipe.fd, fds.at(pipe.fd));
