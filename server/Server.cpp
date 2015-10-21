@@ -263,6 +263,25 @@ std::string Server::getCmdListStr() const
 
 
 
+std::string Server::getHelp(const std::string &cmd) const
+  {
+	Operation op;
+
+	if (cmd.empty()) op = Help;
+	else
+	  {
+		auto it = m_ops.find(cmd);
+		if (it == m_ops.end())
+			return "FAILED where is no help for " + cmd;
+
+		op = it->second;
+	  }
+
+	return "OK " + m_cmdhelp.at(op);
+  }
+
+
+
 bool Server::getLEDState(bool *fail) const
   {
 	if (m_pDevice == nullptr) goto fail;
@@ -348,6 +367,10 @@ bool Server::applyCommand(const std::string &cmd,
 		case Terminate:
 			*res = "OK";
 			*ecd = Quit;
+			return true;
+
+		case Help:
+			*res = getHelp(arg);
 			return true;
 
 		case SetLEDState:

@@ -19,7 +19,7 @@ class LEDDevice
 			Off
 		  };
 
-		const uchar MAX_FREQ = 5;
+		static const uchar MAX_FREQ = 5;
 
 	private:
 

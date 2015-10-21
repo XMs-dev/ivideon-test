@@ -35,6 +35,8 @@ class Server
 			Hello,
 			Exit,
 			Terminate,
+
+			Help,
 		  };
 
 		const std::map<std::string, Operation> m_ops =
@@ -52,6 +54,30 @@ class Server
 			 {"hello",         Hello},
 			 {"exit",          Exit},
 			 {"terminate",     Terminate},
+
+			 {"help",          Help},
+			};
+
+		const std::map<Operation, std::string> m_cmdhelp =
+			{{SetLEDState, "Set LED state. Usage: set-led-state <on|off>"},
+			 {GetLEDState, "Get current LED state"},
+
+			 {SetLEDColor, "Set LED color. Usage: set-led-color <red|green|blue>"},
+			 {GetLEDColor, "Get current LED color. If LED state is off, operation failed"},
+
+			 {SetLEDRate,  "Set LED rate. Usage: set-led-rate <0..N>, "
+			               "N=" + std::to_string(LEDDevice::MAX_FREQ)},
+			 {GetLEDRate,  "Get current LED rate. If LED state is off, operation failed"},
+
+			 {GetCmdList,  "Get list of all commands, splitted by comma"},
+
+			 {Hello,       "Message that new clients send to the server. "
+			               "Responce contains the address of the named pipe to communicate with client. "
+			               "You shouldn't use this command."},
+			 {Exit,        "Tell the server that you don't intend to send commands and close client"},
+			 {Terminate,   "Stop the server"},
+
+			 {Help,        "Get help on commands. List of commands you can get by get-cmd-list command"},
 			};
 
 		typedef LEDDevice::Color Color;
@@ -81,12 +107,13 @@ class Server
 		bool         setLEDRate(uchar rate);
 
 		/*** Get ***/
-		LEDDevice   *device()         const;
+		LEDDevice   *device()                        const;
 
-		std::string  getLEDStateStr() const;
-		std::string  getLEDColorStr() const;
-		std::string  getLEDRateStr()  const;
-		std::string  getCmdListStr()  const;
+		std::string  getLEDStateStr()                const;
+		std::string  getLEDColorStr()                const;
+		std::string  getLEDRateStr()                 const;
+		std::string  getCmdListStr()                 const;
+		std::string  getHelp(const std::string &cmd) const;
 
 		bool         getLEDState(bool *fail = nullptr)    const;
 		Color        getLEDColor(bool *fail = nullptr)    const;
